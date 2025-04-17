@@ -26,26 +26,28 @@ export function AuthProvider({ children }) {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      // Save auth state to localStorage
-      localStorage.setItem("auth", "true");
-
-      // Send the auth token to the Chrome extension
-      const userToken = await auth.currentUser.getIdToken();
-      if (chrome?.runtime?.sendMessage) {
-        chrome.runtime.sendMessage(extensionId, {
-          type: "AUTH_TOKEN",
-          token: userToken,
-        });
-      }
-
+      const user = result.user;
+      const userToken = await user.getIdToken();
+      const userName = user.displayName;
+      const userPhotoURL = user.photoURL;
+  
+      // Send the auth token and user info to the Chrome extension
+      const extensionId = "amjcambocipiinoanadifoajobgkgmon";
+      chrome.runtime.sendMessage(extensionId, {
+        type: "AUTH_TOKEN",
+        token: userToken,
+        name: userName,
+        photoURL: userPhotoURL,
+      });
+  
       // Navigate to dashboard after login
       navigate("/dashboard");
+  
       return result;
     } catch (error) {
       console.error("Error signing in with Google:", error);
     }
   };
-
   // Sign out
   const logout = async () => {
     try {

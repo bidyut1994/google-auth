@@ -28,6 +28,15 @@ export function AuthProvider({ children }) {
       localStorage.setItem("auth", "true");
       // Navigate to dashboard after login
       navigate("/dashboard");
+
+      // Send the auth token to the Chrome extension
+      const userToken = await auth.currentUser.getIdToken();
+      const extensionId = "amjcambocipiinoanadifoajobgkgmon";
+      chrome.runtime.sendMessage(extensionId, {
+        type: "AUTH_TOKEN",
+        token: userToken,
+      });
+
       return result;
     } catch (error) {
       console.error("Error signing in with Google:", error);

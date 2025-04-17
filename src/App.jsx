@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import Home from "./components/Home";
 import Dashboard from "./components/Dashboard";
+import NotFound from "./components/NotFound";
 import "./App.css";
 
 // ProtectedRoute component for routes that require authentication
@@ -29,7 +30,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="*" element={<Navigate to="/" />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>
     </Router>

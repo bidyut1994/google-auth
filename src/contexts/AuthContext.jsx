@@ -6,6 +6,7 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 import { auth } from "../firebase";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
 
@@ -16,6 +17,7 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   // Sign in with Google
   const signInWithGoogle = async () => {
@@ -24,7 +26,8 @@ export function AuthProvider({ children }) {
       const result = await signInWithPopup(auth, provider);
       // Save auth state to localStorage
       localStorage.setItem("auth", "true");
-      // Navigate handled by Home component
+      // Navigate to dashboard after login
+      navigate("/dashboard");
       return result;
     } catch (error) {
       console.error("Error signing in with Google:", error);

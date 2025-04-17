@@ -19,6 +19,8 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const extensionId = "amjcambocipiinoanadifoajobgkgmon"; // 🔁 Replace with your actual extension ID
+
   // Sign in with Google
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
@@ -26,17 +28,18 @@ export function AuthProvider({ children }) {
       const result = await signInWithPopup(auth, provider);
       // Save auth state to localStorage
       localStorage.setItem("auth", "true");
-      // Navigate to dashboard after login
-      navigate("/dashboard");
 
       // Send the auth token to the Chrome extension
       const userToken = await auth.currentUser.getIdToken();
-      const extensionId = "amjcambocipiinoanadifoajobgkgmon";
-      chrome.runtime.sendMessage(extensionId, {
-        type: "AUTH_TOKEN",
-        token: userToken,
-      });
+      if (chrome?.runtime?.sendMessage) {
+        chrome.runtime.sendMessage(extensionId, {
+          type: "AUTH_TOKEN",
+          token: userToken,
+        });
+      }
 
+      // Navigate to dashboard after login
+      navigate("/dashboard");
       return result;
     } catch (error) {
       console.error("Error signing in with Google:", error);
@@ -47,9 +50,8 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try {
       await signOut(auth);
-      // Remove auth state from localStorage
       localStorage.removeItem("auth");
-      // Navigate handled by Dashboard component
+      // Navigation handled elsewhere
     } catch (error) {
       console.error("Error signing out:", error);
     }
@@ -57,10 +59,22 @@ export function AuthProvider({ children }) {
 
   // Set up auth state observer
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       if (user) {
         localStorage.setItem("auth", "true");
+
+        try {
+          const userToken = await user.getIdToken();
+          if (chrome?.runtime?.sendMessage) {
+            chrome.runtime.sendMessage(extensionId, {
+              type: "AUTH_TOKEN",
+              token: userToken,
+            });
+          }
+        } catch (err) {
+          console.error("Error sending token to Chrome Extension:", err);
+        }
       } else {
         localStorage.removeItem("auth");
       }

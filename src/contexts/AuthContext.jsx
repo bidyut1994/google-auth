@@ -51,6 +51,11 @@ export function AuthProvider({ children }) {
     try {
       await signOut(auth);
       localStorage.removeItem("auth");
+
+      // Send a message to the extension to remove the auth token
+      const extensionId = "amjcambocipiinoanadifoajobgkgmon"; // Your extension's ID
+      chrome.runtime.sendMessage(extensionId, { type: "REMOVE_AUTH_TOKEN" });
+
       // Navigation handled elsewhere
     } catch (error) {
       console.error("Error signing out:", error);

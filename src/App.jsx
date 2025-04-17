@@ -1,13 +1,38 @@
-import { useState } from "react";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import Home from "./components/Home";
+import Dashboard from "./components/Dashboard";
 import "./App.css";
+
+// ProtectedRoute component for routes that require authentication
+function ProtectedRoute({ children }) {
+  const { currentUser } = useAuth();
+  return currentUser ? children : <Navigate to="/" />;
+}
 
 function App() {
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <button className="bg-blue-500 text-white p-2 rounded-md">
-        Login with google
-      </button>
-    </div>
+    <Router>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </AuthProvider>
+    </Router>
   );
 }
 
